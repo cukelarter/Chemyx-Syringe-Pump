@@ -11,7 +11,7 @@ import sys
 import os
 import inspect
 
-# Change CWD - Not necessary if set manually in IDE
+# Change CWD - ! Not necessary if set manually in IDE
 def get_script_dir(follow_symlinks = True):
     # retreive directory of this file for use in setting CWD
     if getattr(sys, 'frozen', False):
@@ -25,7 +25,7 @@ def get_script_dir(follow_symlinks = True):
 script_dir = get_script_dir() # retreive containing directory of file
 os.chdir(script_dir)          # set CWD to containing directory
 
-# Import CHEMYX serial connection modules
+#%% Import CHEMYX serial connection modules
 from core import connect
 
 # get open port info

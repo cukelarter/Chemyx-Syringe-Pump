@@ -1,0 +1,47 @@
+In no particular order:
+
+13. can't dynamically tell when pump is d/c or run stops on its own
+	a. would take a while to iron out all possible ways to exit
+	b. is it really needed?
+	c. is there a serial variable to check? pump.status()?
+12. Values not updating properly when outside of operational range
+	a. ex: 1 micro liter of syringe diameter 20
+	b. does serial response throw error code?
+4. Additional gui features:
+	a. Saving parameters
+	c. multi-step features
+5. blank variable behavior
+	a. currently just uses defaults set when initializing
+7. GUI export as exe?
+	a. just for s&g really
+	b. need to package logo resource
+8. fix form resizing when connecting and disconnecting
+	a. or don't because its locked anyways
+11. please for the love of god add a way to remove beeping
+
+
+DONE
+
+1. Separate sending commands from start so it can function to unpause correctly	
+ - Pause and Unpause on same button, start still updates all pump vars
+3. Lockout of serial connection
+	a. if disconnect isn't pressed before closing out, port becomes locked
+	b. add self.closeConnection when closing window
+ - added closeEvent listener that closes connection
+
+6. scan for com ports in gui
+	a. QComboBox.clear()
+	b. lisener for when clicking on combobox?
+	c. scan button is more readable/userfriendly
+ - added scan button next to port selection box
+
+9. lock connection variables when connected
+ - used wdiget.setEnabled()
+
+10. pump variables not updating properly
+ - merged updating and sending to same step, with error if they miss any
+
+2. Investigate multistep issues
+	a. just weren't running correctly? 
+	b. super weird behavior, screen glitches. what the fuck
+ - need to be in multi-step screen before running multistep code

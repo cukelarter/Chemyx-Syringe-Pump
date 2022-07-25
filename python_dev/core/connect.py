@@ -4,13 +4,6 @@ import sys
 import glob
 
 def getOpenPorts():
-    # portinfo = []
-    # for port in serial.tools.list_ports.comports():
-    #     if port[2] != 'n/a':
-    #         info = [port.device, port.name, port.description, port.hwid]
-    #         portinfo.append(info)
-    # return portinfo
-
     if sys.platform.startswith('win'):
         ports = ['COM%s' % (i + 1) for i in range(256)]
     elif sys.platform.startswith('linux') or sys.platform.startswith('cygwin'):
@@ -26,10 +19,8 @@ def getOpenPorts():
             s = serial.Serial(port)
             s.close()
             result.append(port)
-            #print(port)
         except (OSError, serial.SerialException):
             pass
-    #print(result)
     return result
 
 def parsePortName(portinfo):
@@ -138,8 +129,8 @@ class Connection(object):
         return response
 
     def setUnits(self, units):
-        units_dict = {'mL/min': '0', 'mL/hr': '1', 'μL/min': '2', 'μL/hr': 3}
-        command = 'set units ' + str(units_dict[units])
+        units_dict = {'mL/min': '0', 'mL/hr': '1', 'μL/min': '2', 'μL/hr': '3'}
+        command = 'set units ' + units_dict[units]
         response = self.sendCommand(command)
         return response
 
