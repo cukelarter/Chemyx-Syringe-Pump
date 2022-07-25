@@ -3,6 +3,7 @@
 Created on Sun Jul  3 16:31:35 2022
 
 @author: cukelarter
+GUI for interaction with Chemyx syringe pumps.
 """
 
 from PyQt5.QtWidgets import *
@@ -17,7 +18,6 @@ import logging
 logging.basicConfig()
 logger=logging.getLogger('Log')
 logger.setLevel(logging.INFO)
-
 
 #%% Testing
 class ChemyxPumpGUI(QDialog):
