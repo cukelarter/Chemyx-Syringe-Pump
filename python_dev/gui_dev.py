@@ -79,7 +79,7 @@ class ChemyxPumpGUI(QDialog):
         self.serportCBox = QComboBox(width=115)
         self.serportCBox.addItems(portlist)
         self.baudCBox = QComboBox(width=85)
-        self.baudCBox.addItems(['9600','38400'])
+        self.baudCBox.addItems(['9600','14400','19200','38400','57600','115200'])
         self.connectLbl = QLabel('DISCONNECTED')
         self.connectLbl.setStyleSheet("color:red")
         self.connectBtn = QPushButton('Connect')
@@ -91,7 +91,7 @@ class ChemyxPumpGUI(QDialog):
         self.diameterLineEdit=QLineEdit()
         self.diameterLineEdit.setValidator(QDoubleValidator(bottom=0))
         self.volumeLineEdit=QLineEdit()
-        self.volumeLineEdit.setValidator(QDoubleValidator(bottom=0))    
+        self.volumeLineEdit.setValidator(QDoubleValidator())    
         self.flowRateLineEdit=QLineEdit()
         self.flowRateLineEdit.setValidator(QDoubleValidator(bottom=0))
         self.delayLineEdit=QLineEdit()
@@ -112,13 +112,13 @@ class ChemyxPumpGUI(QDialog):
         # Initialize Widgets to Sub-Layouts
         logobox=QVBoxLayout()
         logobox.addWidget(self.logoImage)
-        
+
         connbox=QFormLayout()
         scanbox=QHBoxLayout()   # sublayout for scan button and port selection
         scanbox.addWidget(self.serportCBox)
         scanbox.addWidget(self.scanBtn)
         connbox.addRow(QLabel('Serial Port'),scanbox)
-        connbox.addRow(QLabel('Baud Rate'),self.baudCBox)
+        connbox.addRow(QLabel('Baud Rate (WARNING: Must match Baud Rate specified in pump System Settings)',wordWrap=True),self.baudCBox)
         connbox.addRow(self.connectLbl,self.connectBtn)
         
         fbox = QFormLayout()
@@ -154,22 +154,47 @@ class ChemyxPumpGUI(QDialog):
         """
         Send run variable info to pump using information from each of the respective widgets.
         If any are empty throw an error.
-        Consider not throwing error for certain ones.
         """
+        # Each of these setup variables need to be changed if order is modified in any way
+        names=['Units','Syringe Diameter', 'Volume', 'Flow Rate', 'Delay']
         widgets=[self.unitsCBox,self.diameterLineEdit,self.volumeLineEdit,self.flowRateLineEdit,self.delayLineEdit]
         funcref=[self.CONNECTION.setUnits,self.CONNECTION.setDiameter,self.CONNECTION.setVolume,self.CONNECTION.setRate,self.CONNECTION.setDelay]
+        values=[]
+        
+        # loop through each widget and pull values, then send values using specified function
         for ii in range(len(widgets)):
             func=funcref[ii]
             widg=widgets[ii]
+            # different value extraction methods depending on widget
             if widg.__class__.__name__=='QLineEdit':
                 assert(widg.text()!=''),'ERROR: Must enter all pump variables before starting run.'
-                func(widg.text())
+                value=widg.text()
             elif widg.__class__.__name__=='QComboBox':
                 assert(widg.currentText()!=''),'ERROR: Must enter all pump variables before starting run.'
-                func(widg.currentText())
+                value=widg.currentText()
             else: 
                 logger.warning('Unrecognized widget class.')
-                
+            # Send to pump
+            func(value)
+            values.append(value)
+        """
+        Validate that value is inside of operational range.
+        Reads parameters from pump and compares to what was sent from GUI.
+        Throws error if mismatch.
+        """
+        # index of relevant variable to readout from pump
+        map_readparam = [1,2,6,3,7]
+        # get parameters of current pump run
+        readout=self.CONNECTION.getParameters()
+        # map readout to params
+        params=[readout[x].strip(' ').split(' ')[-1] for x in map_readparam]
+        # skip units param, fixed options in GUI are within operational range
+        for ii in range(1,len(values)): 
+            # get parameter value from pump readout
+            paramVal = params[ii]
+            # abs() accounts for negative volume metric (withdraw functionality)
+            assert(float(paramVal)==abs(float(values[ii]))),f'ERROR: {names[ii]} value outside of operational range'
+        
     def start(self):
         """
         Start the current run. Sends updated pump variables before starting run. 
@@ -199,13 +224,10 @@ class ChemyxPumpGUI(QDialog):
         if self.connected:
             if self.isRunning:
                 self.CONNECTION.pausePump()
-                #self.isRunning=False
                 self.setPauseBtn(False)
                 logger.info('Paused Run')
             else:
                 self.CONNECTION.startPump()
-                #self.pauseBtn.setText('Pause')
-                #self.isRunning=True
                 self.setPauseBtn(True)
                 logger.info('Unpaused Run')
     def setPauseBtn(self,val):

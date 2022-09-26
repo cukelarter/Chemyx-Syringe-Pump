@@ -1,24 +1,21 @@
 In no particular order:
 
-13. can't dynamically tell when pump is d/c or run stops on its own
-	a. would take a while to iron out all possible ways to exit
-	b. is it really needed?
-	c. is there a serial variable to check? pump.status()?
-12. Values not updating properly when outside of operational range
-	a. ex: 1 micro liter of syringe diameter 20
-	b. does serial response throw error code?
 4. Additional gui features:
 	a. Saving parameters
 	c. multi-step features
-5. blank variable behavior
-	a. currently just uses defaults set when initializing
+ - not needed
 7. GUI export as exe?
 	a. just for s&g really
 	b. need to package logo resource
+ - Shelved, NI exe will be developed at later date
 8. fix form resizing when connecting and disconnecting
 	a. or don't because its locked anyways
+ - Who cares?
 11. please for the love of god add a way to remove beeping
-
+ - Never gonna happen
+14. Negative pump values
+	a. pump doesnt allow for negative volume?
+ - removed "bottom"
 
 DONE
 
@@ -45,3 +42,24 @@ DONE
 	a. just weren't running correctly? 
 	b. super weird behavior, screen glitches. what the fuck
  - need to be in multi-step screen before running multistep code
+ 
+5. blank variable behavior
+	a. currently just uses defaults set when initializing
+ - throws an error if any are empty
+
+
+12. Values not updating properly when outside of operational range
+	a. ex: 1 micro liter of syringe diameter 20
+	b. does serial response throw error code?
+	c. validation step?
+ - Validation step called after sending from GUI, should clean up a little bit
+
+15. baudrate of 38400 not working properly
+	a. serial port is opening correctly, but fails when sending variables over
+ - Must be set on pump before being set in gui/code, added warning in label
+
+13. can't dynamically tell when pump is d/c or run stops on its own
+	a. would take a while to iron out all possible ways to exit
+	b. is it really needed?
+	c. is there a serial variable to check? pump.status()?
+ - Pump responds correctly regardless
