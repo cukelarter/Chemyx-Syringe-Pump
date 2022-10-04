@@ -38,12 +38,13 @@ def parsePortName(portinfo):
     return portlist
 
 class Connection(object):
-    def __init__(self, port, baudrate, x = 0, mode = 0, verbose=False):
+    def __init__(self, port, baudrate,verbose=False,multipump=False):
         self.port = port
         self.baudrate = baudrate
-        self.x = x
-        self.mode = mode
+        self.multipump=multipump
         self.verbose = verbose
+        if self.multipump:
+            self.currentPump=1
 
     def openConnection(self):
         try:
@@ -71,6 +72,9 @@ class Connection(object):
             print("Closed connection")
 
     def sendCommand(self, command):
+        if self.multipump and command[:3]=='set':
+            command=self.addPump(command)
+        print(command)
         try:
             arg = bytes(str(command), 'utf8') + b'\r'
             self.ser.write(arg)
@@ -105,26 +109,22 @@ class Connection(object):
             self.closeConnection()
 
     def startPump(self):
-        command = 'start'
-        command = self.addX(command)
-        command = self.addMode(command)
+        command = 'start '
         response = self.sendCommand(command)
         return response
 
     def stopPump(self):
-        command = 'stop'
-        command = self.addX(command)
+        command = 'stop '
         response = self.sendCommand(command)
         return response
 
     def pausePump(self):
-        command = 'pause'
-        command = self.addX(command)
+        command = 'pause '
         response = self.sendCommand(command)
         return response
 
     def restartPump(self):
-        command = 'restart'
+        command = 'restart '
         response = self.sendCommand(command)
         return response
 
@@ -195,14 +195,16 @@ class Connection(object):
         command = 'pump status'
         response = self.sendCommand(command)
         return response
-    def addMode(self, command):
-        if self.mode == 0:
-            return command
+    
+    def changePump(self,pump):
+        """
+        Change which pump's settings are being modified in multi-pump setup
+        """
+        if self.multipump:
+            self.currentPump=pump
+            
+    def addPump(self, command):
+        if self.multipump:
+            return f'{self.currentPump} {command}'
         else:
-            return command + ' ' + str(self.mode - 1)
-
-    def addX(self, command):
-        if self.x == 0:
             return command
-        else:
-            return str(self.x) + ' ' + command
