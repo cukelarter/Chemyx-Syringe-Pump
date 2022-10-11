@@ -43,12 +43,12 @@ if __name__=='__main__':
     varrates=[str(rate1[ii])+'/'+str(rate2[ii]) for ii in range(len(rate1))]
     # Rate = [Step1: 20mL/min->21mL/min, Step2: 5mL/min->6mL/min, Step3: 40mL/min->41mL/min]
             
-    # communicate parameters to pump
+    # Communicate parameters to pump
     conn.setUnits(units)
     conn.setDiameter(diameter)  
     conn.setVolume(volume)      
     conn.setRate(varrates)          
     conn.setDelay(delay)  
     
-    # start pump
-    conn.startPump()
+    # Start pump
+    conn.startPump(multistep=True)

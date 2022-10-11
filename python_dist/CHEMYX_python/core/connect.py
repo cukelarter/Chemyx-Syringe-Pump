@@ -119,7 +119,7 @@ class Connection(object):
                 print(f)
             self.closeConnection()
 
-    def startPump(self, mode=0):
+    def startPump(self, mode=0, multistep=False):
         """
         Start run of pump. 
 
@@ -134,10 +134,14 @@ class Connection(object):
             1: For dual channel pumps, runs just pump 1.
             2: For dual channel pumps, runs just pump 2.
             3: Run in cycle mode.
+        multistep : bool
+            Determine if pump should start in multistep mode
         """
         command = 'start '
         if self.multipump and mode>0:
             command = f'{mode} {command}'
+        if multistep:
+            command = f'{command} {int(multistep)}'
         response = self.sendCommand(command)
         return response
 
@@ -261,11 +265,23 @@ class Connection(object):
     def changePump(self,pump):
         """
         Change which pump's settings are being modified in multi-pump setup
+        
+        Parameters
+        ----------
+        mode : int
+            Pump that will have its settings modified in subsequent commands.
         """
         if self.multipump:
             self.currentPump=pump
             
     def addPump(self, command):
+        """
+        Prepend pump number to command. Used for 'set' commands.
+        
+        Parameters
+        ----------
+        command : string
+        """
         if self.multipump:
             return f'{self.currentPump} {command}'
         else:
