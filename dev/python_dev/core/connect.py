@@ -72,6 +72,17 @@ class Connection(object):
             print("Closed connection")
 
     def sendCommand(self, command):
+        """
+        Send command to pump.
+        If 'set' command is called in multi-pump mode, prepend the number
+        of the pump that is being modified.
+
+        Parameters
+        ----------
+        command : float
+            Command to be sent across serial connection.
+
+        """
         if self.multipump and command[:3]=='set':
             command=self.addPump(command)
         print(command)
@@ -108,18 +119,69 @@ class Connection(object):
                 print(f)
             self.closeConnection()
 
-    def startPump(self):
+    def startPump(self, mode=0):
+        """
+        Start run of pump. 
+
+        Parameters
+        ----------
+        mode : int
+            Mode that pump should start running.
+            For single-channel pumps this value should not change.
+            Dual-channel pumps have more control over run state.
+            
+            0: Default, runs all channels available.
+            1: For dual channel pumps, runs just pump 1.
+            2: For dual channel pumps, runs just pump 2.
+            3: Run in cycle mode.
+        """
         command = 'start '
+        if self.multipump and mode>0:
+            command = f'{mode} {command}'
         response = self.sendCommand(command)
         return response
 
-    def stopPump(self):
+    def stopPump(self, mode=0):
+        """
+        Stop run of pump. 
+
+        Parameters
+        ----------
+        mode : int
+            Mode that pump should stop running.
+            For single-channel pumps this value should not change.
+            Dual-channel pumps have more control over run state.
+            
+            0: Default, stops all channels available.
+            1: For dual channel pumps, stops just pump 1.
+            2: For dual channel pumps, stops just pump 2.
+            3: Stop cycle mode.
+        """
         command = 'stop '
+        if self.multipump and mode>0:
+            command = f'{mode} {command}'
         response = self.sendCommand(command)
         return response
 
-    def pausePump(self):
+    def pausePump(self, mode=0):
+        """
+        Pauses run of pump. 
+
+        Parameters
+        ----------
+        mode : int
+            Mode that pump should pause current run.
+            For single-channel pumps this value should not change.
+            Dual-channel pumps have more control over run state.
+            
+            0: Default, pauses all channels available.
+            1: For dual channel pumps, pauses just pump 1.
+            2: For dual channel pumps, pauses just pump 2.
+            3: Pause cycle mode.
+        """
         command = 'pause '
+        if self.multipump and mode>0:
+            command = f'{mode} {command}'
         response = self.sendCommand(command)
         return response
 

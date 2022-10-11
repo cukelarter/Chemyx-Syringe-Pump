@@ -3,7 +3,7 @@
 Created on Mon May 30 16:15:46 2022
 @author: cukelarter
 
-Script for initiating basic run on Chemyx Syringe Pump. Tested on Chemyx 100-X.
+Script for initiating single step run on Chemyx Syringe Pump. Tested on Chemyx 100-X.
 
 After importing serial connection driver we connect to the pump. Connection will remain open
 until user calls "conn.closeConnection()". If user does not call this before exiting

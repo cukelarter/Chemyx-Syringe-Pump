@@ -4,7 +4,7 @@ Created on Tue Oct  4 15:41:48 2022
 
 @author: cukelarter
 
-Script for initiating basic run on Chemyx Syringe Pump. Tested on Chemyx 100-X.
+Script for initiating single step run on multichannel Chemyx Syringe Pump. Tested on Chemyx 4000-X.
 
 After importing serial connection driver we connect to the pump. Connection will remain open
 until user calls "conn.closeConnection()". If user does not call this before exiting
@@ -38,15 +38,12 @@ if __name__=='__main__':
     diameter=28.6           # 28.6mm diameter
     volume=1                # 1 mL volume
     rate=1                  # 1 mL/min flow rate
-    runtime=volume/rate     # this is calculated implictly by pump
-    delay=0.5               # 30 second delay
     
     # Communicate parameters to pump 1
     conn.setUnits(units)
     conn.setDiameter(diameter)  
     conn.setVolume(volume)      
-    conn.setRate(rate)          
-    conn.setDelay(delay)       
+    conn.setRate(rate)        
     
     # Specify which pump is having its parameters modified
     conn.changePump(2)
@@ -56,15 +53,12 @@ if __name__=='__main__':
     diameter=28.6           # 28.6mm diameter
     volume=1                # 1 mL volume
     rate=1                  # 1 mL/min flow rate
-    runtime=volume/rate     # this is calculated implictly by pump
-    delay=0.5               # 30 second delay
     
-    # Communicate parameters to pump 1
+    # Communicate parameters to pump 2
     conn.setUnits(units)
     conn.setDiameter(diameter)  
     conn.setVolume(volume)      
     conn.setRate(rate)          
-    conn.setDelay(delay)  
     
     # Start pump
     conn.startPump()

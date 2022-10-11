@@ -23,7 +23,7 @@ portinfo = connect.getOpenPorts()
 # MUST set baudrate in pump "System Settings", and MUST match this rate:
 baudrate=9600
 # initiate Connection object with first open port
-conn = connect.Connection(port=str(portinfo[0]),baudrate=baudrate, x=0, mode=0)
+conn = connect.Connection(port=str(portinfo[0]),baudrate=baudrate, multipump=False)
 
 #%% Connect and Run Pump - Multi-Step Setup
 if __name__=='__main__':
