@@ -33,17 +33,19 @@ if __name__=='__main__':
     # Specify that we are modfying cycle mode settings
     conn.changePump(3)
     
-    # Setup parameters for pump 1
+    # Setup parameters for pump
     units='mL/min'		 	# OPTIONS: 'mL/min','mL/hr','μL/min','μL/hr'
     diameter=28.6           # 28.6mm diameter
     volume=1                # 1 mL volume
     rate=1                  # 1 mL/min flow rate
+    delay=1                 # 1 s delay
     
-    # Communicate parameters to pump 1
+    # Communicate parameters to pump
     conn.setUnits(units)
     conn.setDiameter(diameter)  
     conn.setVolume(volume)      
-    conn.setRate(rate)           
+    conn.setRate(rate) 
+    conn.setDelay(delay)          
     
     # Start pump in cycle mode
     conn.startPump(mode=3)

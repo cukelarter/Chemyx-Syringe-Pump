@@ -1,3 +1,10 @@
+"""
+@author: cukelarter
+
+Module for serial interfacing with CHEMYX Syringe Pumps.
+
+"""
+
 import time
 import serial
 import sys
@@ -38,7 +45,23 @@ def parsePortName(portinfo):
     return portlist
 
 class Connection(object):
+    """
+    Controls serial interfacing with CHEMYX Syringe Pump.
+    """
     def __init__(self, port, baudrate,verbose=False,multipump=False):
+        """
+        Parameters
+        ----------
+        port : string
+        baudrate : int
+            MUST match baudrate set in pump settings.
+        verbose : bool, optional
+            Enables error readouts during exception handling. The default is False.
+        multipump : bool
+            True if connecting to dual-channel pump. The default is False.
+
+        """
+        
         self.port = port
         self.baudrate = baudrate
         self.multipump=multipump
