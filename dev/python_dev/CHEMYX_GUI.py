@@ -28,16 +28,21 @@ class ChemyxPumpGUI(QDialog):
         # set title
         self.setWindowTitle('Chemyx Pump Connector')
         # setting geometry of the window
-        self.setGeometry(100, 100, 350, 400)
+        self.setGeometry(100, 100, 500, 400)
         # restrict to unmodifiable dimensions
-        #self.setFixedWidth(600)
-        #self.setFixedHeight(400)
         
         # creating group boxes
         self.logoGroupBox = QGroupBox()
         self.connGroupBox = QGroupBox("Connection Variables")
         self.formGroupBox = QGroupBox("Single-Step Pump Variables")
         self.buttGroupBox = QGroupBox('Run Controls')
+        
+        # initialize run variable control tabs
+        self.tabs=QTabWidget()
+        self.tab1=QWidget()
+        self.tab2=QWidget()
+        self.tabs.addTab(self.tab1,"Single-Step Pump Variables")
+        self.tabs.addTab(self.tab2,"Multi-Step Pump Variables")
         
         # initialize variable to tell if the pump is running
         # used exclusively by start/pause&unpause/stop functions
@@ -56,19 +61,11 @@ class ChemyxPumpGUI(QDialog):
         self.units='mL/min'     # OPTIONS: 'mL/min','mL/hr','μL/min','μL/hr'
         self.unitlist=['mL/min','mL/hr',"\u03BCL/min",'\u03BCL/hr']
         [self.volunit,self.timeunit]=self.units.split('/')
-        
-        # these don't actually do anything - all updates occur in one step
-        # !! maybe these shouldn't be set? food for thought
-        #self.diameter=28.6      # 28.6mm diameter - can be set in pump GUI
-        #self.volume=1                # 1 mL volume
-        #self.flowrate=1                  # 1 mL/min flow rate
-        #self.runtime=self.volume/self.flowrate     # this is calculated implictly by pump
-        #self.delay=0.5               # 30 second delay
-        
+            
     def initUI(self):
         # Logo Graphics
         logopath='static/logo.png'
-        self.logo = QPixmap(logopath)
+        self.logo = QPixmap(logopath).scaled(200,100)
         self.logoImage=QLabel()
         self.logoImage.setPixmap(self.logo)
         self.logoImage.setAlignment(Qt.AlignCenter)
@@ -85,7 +82,7 @@ class ChemyxPumpGUI(QDialog):
         self.connectBtn = QPushButton('Connect')
         self.connectBtn.clicked.connect(lambda:self.connect())
 
-        # Pump Variable Fields
+        # Single-Step Pump Variable Fields
         self.unitsCBox = QComboBox()
         self.unitsCBox.addItems(self.unitlist)
         self.diameterLineEdit=QLineEdit()
@@ -96,6 +93,20 @@ class ChemyxPumpGUI(QDialog):
         self.flowRateLineEdit.setValidator(QDoubleValidator(bottom=0))
         self.delayLineEdit=QLineEdit()
         self.delayLineEdit.setValidator(QDoubleValidator(bottom=0))
+        
+        # Multi-Step Pump Variable Fields
+        self.multi_unitsCBox = QComboBox()
+        self.multi_unitsCBox.addItems(self.unitlist)
+        self.multi_stepsSBox = QSpinBox()
+        self.multi_stepsSBox.setMaximum(99)
+        self.multi_stepsSBox.setMinimum(1)
+        self.multi_diameterLineEdit=QLineEdit()
+        self.multi_diameterLineEdit.setValidator(QDoubleValidator(bottom=0))
+        self.multi_volumeLineEdit=QLineEdit()
+        self.multi_volumeLineEdit.setValidator(QDoubleValidator())    
+        self.multi_flowRateLineEdit=QLineEdit()
+        self.multi_delayLineEdit=QLineEdit()
+        self.multi_delayLineEdit.setValidator(QDoubleValidator(bottom=0))
         
         # Button Controls
         # start/pause&unpause/stop
@@ -112,7 +123,8 @@ class ChemyxPumpGUI(QDialog):
         # Initialize Widgets to Sub-Layouts
         logobox=QVBoxLayout()
         logobox.addWidget(self.logoImage)
-
+        
+        # Connection Widget
         connbox=QFormLayout()
         scanbox=QHBoxLayout()   # sublayout for scan button and port selection
         scanbox.addWidget(self.serportCBox)
@@ -121,29 +133,41 @@ class ChemyxPumpGUI(QDialog):
         connbox.addRow(QLabel('Baud Rate (WARNING: Must match Baud Rate specified in pump System Settings)',wordWrap=True),self.baudCBox)
         connbox.addRow(self.connectLbl,self.connectBtn)
         
-        fbox = QFormLayout()
-        fbox.addRow(QLabel("Units"),self.unitsCBox)
-        fbox.addRow(QLabel("Syringe Diameter (mm)"),self.diameterLineEdit)
-        fbox.addRow(QLabel("Volume"),self.volumeLineEdit)
-        fbox.addRow(QLabel("Flow Rate"),self.flowRateLineEdit)
-        fbox.addRow(QLabel("Delay (mins)"),self.delayLineEdit)
+        # Single-Step Run Widget
+        fbox_1step = QFormLayout()
+        fbox_1step.addRow(QLabel("Units"),self.unitsCBox)
+        fbox_1step.addRow(QLabel("Syringe Diameter (mm)"),self.diameterLineEdit)
+        fbox_1step.addRow(QLabel("Volume"),self.volumeLineEdit)
+        fbox_1step.addRow(QLabel("Flow Rate"),self.flowRateLineEdit)
+        fbox_1step.addRow(QLabel("Delay (sec)"),self.delayLineEdit)
         
+        # Multi-Step Run Widget
+        fbox_mstep = QFormLayout()
+        fbox_mstep.addRow(QLabel("Units"),self.multi_unitsCBox)
+        fbox_mstep.addRow(QLabel("Syringe Diameter (mm)"),self.multi_diameterLineEdit)
+        fbox_mstep.addRow(QLabel("Volume"),self.multi_volumeLineEdit)
+        fbox_mstep.addRow(QLabel("Flow Rate"),self.multi_flowRateLineEdit)
+        fbox_mstep.addRow(QLabel("Delay (sec)"),self.multi_delayLineEdit)
+
+
+        # Run Control Widget
         runctrlbox = QHBoxLayout()
         runctrlbox.addWidget(self.startBtn)
         runctrlbox.addWidget(self.pauseBtn)
         runctrlbox.addWidget(self.stopBtn)
         
-        # creating a vertical box layout and adding sub-layouts
+        # creating a main vertical box layout and adding sub-layouts
         mainLayout = QVBoxLayout()
         mainLayout.addWidget(self.logoGroupBox)
         mainLayout.addWidget(self.connGroupBox)
-        mainLayout.addWidget(self.formGroupBox)
+        mainLayout.addWidget(self.tabs)
         mainLayout.addWidget(self.buttGroupBox)
         
         # Set as layouts of group boxes to defined sub-layouts
         self.logoGroupBox.setLayout(logobox)
         self.connGroupBox.setLayout(connbox)
-        self.formGroupBox.setLayout(fbox)
+        self.tab1.setLayout(fbox_1step)
+        self.tab2.setLayout(fbox_mstep)
         self.buttGroupBox.setLayout(runctrlbox)
         
         # setting layout of main window
@@ -155,7 +179,7 @@ class ChemyxPumpGUI(QDialog):
         Send run variable info to pump using information from each of the respective widgets.
         If any are empty throw an error.
         """
-        # Each of these setup variables need to be changed if order is modified in any way
+        # setup static references
         names=['Units','Syringe Diameter', 'Volume', 'Flow Rate', 'Delay']
         widgets=[self.unitsCBox,self.diameterLineEdit,self.volumeLineEdit,self.flowRateLineEdit,self.delayLineEdit]
         funcref=[self.CONNECTION.setUnits,self.CONNECTION.setDiameter,self.CONNECTION.setVolume,self.CONNECTION.setRate,self.CONNECTION.setDelay]
@@ -194,15 +218,59 @@ class ChemyxPumpGUI(QDialog):
             paramVal = params[ii]
             # abs() accounts for negative volume metric (withdraw functionality)
             assert(float(paramVal)==abs(float(values[ii]))),f'ERROR: {names[ii]} value outside of operational range'
+    
+    def sendFromGUI_multi(self):
+        """
+        Send run variable info to pump using information from each of the respective widgets.
+        If any are empty throw an error.
+        For multi-step we skip validation
+        """
+        # setup static references        
+        names=['Units','Syringe Diameter', 'Volume', 'Flow Rate','Delay']
+        widgets=[self.multi_unitsCBox,self.multi_diameterLineEdit,self.multi_volumeLineEdit,self.multi_flowRateLineEdit,self.multi_delayLineEdit]
+        funcref=[self.CONNECTION.setUnits,self.CONNECTION.setDiameter,self.CONNECTION.setVolume,self.CONNECTION.setRate,self.CONNECTION.setDelay]
+        values=[]
+        nsteps=0
+        # loop through each widget and pull values, then send values using specified function
+        for ii in range(len(widgets)):
+            func=funcref[ii]
+            widg=widgets[ii]
+            # different value extraction methods depending on widget
+            if widg.__class__.__name__=='QLineEdit':
+                assert(widg.text()!=''),'ERROR: Must enter all pump variables before starting run.'
+                value=widg.text()
+            elif widg.__class__.__name__=='QComboBox':
+                assert(widg.currentText()!=''),'ERROR: Must enter all pump variables before starting run.'
+                value=widg.currentText()
+            else: 
+                logger.warning('Unrecognized widget class.')
+            
+            # process entry data into list
+            if ii>1: 
+                # skip units and diameter, these are immutable between steps
+                value=[v.strip() for v in value.split(',')]
+                # initialize nsteps at first multi-step parameter
+                nsteps=len(value) if nsteps==0 else nsteps
+                # ensure list length matches number of steps
+                assert(len(value)==nsteps),'ERROR: Number of steps must match number of input variables. \n Pump {pump} {names[ii]}'
+            # Send to pump
+            func(value)
+            values.append(value)
+        
         
     def start(self):
         """
         Start the current run. Sends updated pump variables before starting run. 
         """
         if self.connected:
-            logger.info('Sending Pump Variables from GUI')
-            self.sendFromGUI()
-            self.CONNECTION.startPump()
+            if self.tabs.currentIndex()==0: #single-step
+                logger.info('Sending Single-Step Variables from GUI')
+                self.sendFromGUI()
+                self.CONNECTION.startPump()
+            else:
+                logger.info('Sending Multi-Step Variables from GUI')
+                self.sendFromGUI_multi()
+                self.CONNECTION.startPump(multistep=True)
             self.isRunning=True
             self.setPauseBtn(True)
             logger.info('Started Run')

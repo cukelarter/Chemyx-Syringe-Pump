@@ -436,7 +436,7 @@ class ChemyxPumpGUI(QDialog):
                 self.CONNECTION.startPump(mode=3)
             self.isRunning=True
             self.setPauseBtn(True)
-            logger.info('Started Run - Pump {pump}')
+            logger.info(f'Started Run - Pump {pump}')
             
     def stop(self):
         """
@@ -454,13 +454,11 @@ class ChemyxPumpGUI(QDialog):
         """
         if self.connected:
             if self.isRunning:
-                self.CONNECTION.pausePump()
+                self.CONNECTION.pausePump(mode=1)
+                self.CONNECTION.pausePump(mode=2)
                 self.setPauseBtn(False)
                 logger.info('Paused Run')
-            else:
-                self.CONNECTION.startPump()
-                self.setPauseBtn(True)
-                logger.info('Unpaused Run')
+                
     def setPauseBtn(self,val):
         """
         Change display of pause/unpause button depending on if progrma is running
