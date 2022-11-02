@@ -153,6 +153,10 @@ class ChemyxPumpGUI(QDialog):
         self.pauseBtn.clicked.connect(lambda:self.pause())
         self.startBtn = QPushButton('Start')
         self.startBtn.clicked.connect(lambda:self.start())
+        self.startBtn_pump1 = QPushButton('Start Pump 1')
+        self.startBtn_pump1.clicked.connect(lambda:self.start_pump(1))
+        self.startBtn_pump2 = QPushButton('Start Pump 2')
+        self.startBtn_pump2.clicked.connect(lambda:self.start_pump(2))
         # scan button
         self.scanBtn = QPushButton('Scan For Open Ports')
         self.scanBtn.clicked.connect(lambda:self.scanPorts())
@@ -224,7 +228,11 @@ class ChemyxPumpGUI(QDialog):
         
         # Run Control Widget
         runctrlbox = QHBoxLayout()
-        runctrlbox.addWidget(self.startBtn)
+        runctrlbox_start = QVBoxLayout()
+        runctrlbox_start.addWidget(self.startBtn)
+        runctrlbox_start.addWidget(self.startBtn_pump1)
+        runctrlbox_start.addWidget(self.startBtn_pump2)
+        runctrlbox.addLayout(runctrlbox_start)
         runctrlbox.addWidget(self.pauseBtn)
         runctrlbox.addWidget(self.stopBtn)
         
@@ -402,8 +410,34 @@ class ChemyxPumpGUI(QDialog):
                 self.CONNECTION.startPump(mode=3)
             self.isRunning=True
             self.setPauseBtn(True)
-            logger.info('Started Run')
-
+            logger.info('Started Run - Both Pumps')
+            
+    def start_pump(self, pump):
+        """
+        Start the current run just for pump specified. Sends updated pump variables before starting run. 
+        Parameters
+        ----------
+        pump : int [1,2]
+            Pump that commands are sent to.
+        """
+        if self.connected:
+            if self.tabs.currentIndex()==0: # single-step
+                logger.info(f'Sending Single-Step Variables from GUI to Pump {pump}')
+                self.sendFromGUI(pump=pump)
+                self.CONNECTION.startPump(mode=pump)
+            elif self.tabs.currentIndex()==1: # multi-step
+                logger.info(f'Sending Multi-Step Variables from GUI to Pump {pump}')
+                self.sendFromGUI_multi(pump=pump)
+                self.CONNECTION.startPump(mode=pump,multistep=True) # will this work?
+            else: # cycle mode
+                logger.warning('Cycle mode starts both pumps.')
+                logger.info('Sending Cycle Mode Variables from GUI')
+                self.sendFromGUI_cycle()
+                self.CONNECTION.startPump(mode=3)
+            self.isRunning=True
+            self.setPauseBtn(True)
+            logger.info('Started Run - Pump {pump}')
+            
     def stop(self):
         """
         Stops the current run.
