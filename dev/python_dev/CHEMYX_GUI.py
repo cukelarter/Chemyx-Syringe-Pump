@@ -191,11 +191,15 @@ class ChemyxPumpGUI(QDialog):
             widg=widgets[ii]
             # different value extraction methods depending on widget
             if widg.__class__.__name__=='QLineEdit':
-                assert(widg.text()!=''),'ERROR: Must enter all pump variables before starting run.'
-                value=widg.text()
+                if widg.text()!='':
+                    value=widg.text()
+                else:
+                    raise Exception('ERROR: Must enter all pump variables before starting run.')
             elif widg.__class__.__name__=='QComboBox':
-                assert(widg.currentText()!=''),'ERROR: Must enter all pump variables before starting run.'
-                value=widg.currentText()
+                if widg.currentText()!='':
+                    value=widg.currentText()
+                else:
+                    raise Exception('ERROR: Must enter all pump variables before starting run.')
             else: 
                 logger.warning('Unrecognized widget class.')
             # Send to pump
@@ -217,8 +221,9 @@ class ChemyxPumpGUI(QDialog):
             # get parameter value from pump readout
             paramVal = params[ii]
             # abs() accounts for negative volume metric (withdraw functionality)
-            assert(float(paramVal)==abs(float(values[ii]))),f'ERROR: {names[ii]} value outside of operational range'
-    
+            if not float(paramVal)==abs(float(values[ii])):
+                raise Exception(f'ERROR: Pump {pump} {names[ii]} value outside of operational range')
+   
     def sendFromGUI_multi(self):
         """
         Send run variable info to pump using information from each of the respective widgets.
@@ -237,11 +242,15 @@ class ChemyxPumpGUI(QDialog):
             widg=widgets[ii]
             # different value extraction methods depending on widget
             if widg.__class__.__name__=='QLineEdit':
-                assert(widg.text()!=''),'ERROR: Must enter all pump variables before starting run.'
-                value=widg.text()
+                if widg.text()!='':
+                    value=widg.text()
+                else:
+                    raise Exception('ERROR: Must enter all pump variables before starting run.')
             elif widg.__class__.__name__=='QComboBox':
-                assert(widg.currentText()!=''),'ERROR: Must enter all pump variables before starting run.'
-                value=widg.currentText()
+                if widg.currentText()!='':
+                    value=widg.currentText()
+                else:
+                    raise Exception('ERROR: Must enter all pump variables before starting run.')
             else: 
                 logger.warning('Unrecognized widget class.')
             
@@ -252,7 +261,8 @@ class ChemyxPumpGUI(QDialog):
                 # initialize nsteps at first multi-step parameter
                 nsteps=len(value) if nsteps==0 else nsteps
                 # ensure list length matches number of steps
-                assert(len(value)==nsteps),'ERROR: Number of steps must match number of input variables. \n Pump {pump} {names[ii]}'
+                if len(value)!=nsteps:
+                    raise Exception('ERROR: Number of steps must match number of input variables. \n Pump {pump} {names[ii]}')
             # Send to pump
             func(value)
             values.append(value)
