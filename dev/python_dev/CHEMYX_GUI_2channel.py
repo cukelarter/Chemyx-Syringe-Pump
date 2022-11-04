@@ -36,7 +36,7 @@ class ChemyxPumpGUI(QDialog):
         # creating group boxes
         self.logoGroupBox = QGroupBox()
         self.connGroupBox = QGroupBox("Connection Variables")
-        self.formGroupBox = QGroupBox("Single-Step Pump Variables")
+        self.sendGroupBox = QGroupBox('Send Run Variables to Pump')
         self.buttGroupBox = QGroupBox('Run Controls')
         
         # initialize run variable control tabs
@@ -44,9 +44,9 @@ class ChemyxPumpGUI(QDialog):
         self.tab1=QWidget()
         self.tab2=QWidget()
         self.tab3=QWidget()
-        self.tabs.addTab(self.tab1,"Single-Step Pump Variables")
-        self.tabs.addTab(self.tab2,"Multi-Step Pump Variables")
-        self.tabs.addTab(self.tab3,"Cycle Mode Pump Variables")
+        self.tabs.addTab(self.tab1,"Single-Step Run Variables")
+        self.tabs.addTab(self.tab2,"Multi-Step Run Variables")
+        self.tabs.addTab(self.tab3,"Cycle Mode Run Variables")
         
         # initialize variable to tell if the pump is running
         # used exclusively by start/pause&unpause/stop functions
@@ -145,6 +145,14 @@ class ChemyxPumpGUI(QDialog):
         self.cycle_delayLineEdit=QLineEdit()
         self.cycle_delayLineEdit.setValidator(QDoubleValidator(bottom=0))
         
+        # Send Pump Var Controls
+        #self.sendVars=QPushButton('Both')
+        #self.sendVars.clicked.connect(lambda:self.sendFromGUI())
+        self.sendVars_pump1=QPushButton('Pump 1')
+        self.sendVars_pump1.clicked.connect(lambda:self.sendFromGUI(pump=1))
+        self.sendVars_pump2=QPushButton('Pump 2')
+        self.sendVars_pump2.clicked.connect(lambda:self.sendFromGUI(pump=2))
+        
         # Button Controls
         # start/pause&unpause/stop
         self.stopBtn = QPushButton('Stop')
@@ -226,6 +234,11 @@ class ChemyxPumpGUI(QDialog):
         fbox_cycle.addRow(QLabel("Flow Rate"),self.cycle_flowRateLineEdit)
         fbox_cycle.addRow(QLabel("Delay (sec)"),self.cycle_delayLineEdit)
         
+        # Send Pump Var Widget
+        sendvarbox = QHBoxLayout()
+        sendvarbox.addWidget(self.sendVars_pump1)
+        sendvarbox.addWidget(self.sendVars_pump2)
+        
         # Run Control Widget
         runctrlbox = QHBoxLayout()
         runctrlbox_start = QVBoxLayout()
@@ -241,6 +254,7 @@ class ChemyxPumpGUI(QDialog):
         mainLayout.addWidget(self.logoGroupBox)
         mainLayout.addWidget(self.connGroupBox)
         mainLayout.addWidget(self.tabs)
+        mainLayout.addWidget(self.sendGroupBox)
         mainLayout.addWidget(self.buttGroupBox)
         
         # Set as layouts of group boxes to defined sub-layouts
@@ -249,6 +263,7 @@ class ChemyxPumpGUI(QDialog):
         self.tab1.setLayout(fbox_1step)
         self.tab2.setLayout(fbox_mstep)
         self.tab3.setLayout(fbox_cycle)
+        self.sendGroupBox.setLayout(sendvarbox)
         self.buttGroupBox.setLayout(runctrlbox)
         
         # setting layout of main window
@@ -264,76 +279,28 @@ class ChemyxPumpGUI(QDialog):
         pump : int [1,2]
             Pump that commands are sent to.
         """
-        # specify which pump commands are sent to
-        self.CONNECTION.changePump(pump)
-        # Each of these setup variables need to be changed if order is modified in any way
+        # decide mode at start of function for consistency
+        mode = self.tabs.currentIndex()
+        # setup widget references based on which mode
+        if mode==0: # single-step
+            logger.info(f'Sending Single-Step Variables from GUI to Pump {pump}')
+            self.CONNECTION.changePump(pump)
+            widgets_pump1=[self.unitsCBox_pump1,self.diameterLineEdit_pump1,self.volumeLineEdit_pump1,self.flowRateLineEdit_pump1,self.delayLineEdit_pump1]
+            widgets_pump2=[self.unitsCBox_pump2,self.diameterLineEdit_pump2,self.volumeLineEdit_pump2,self.flowRateLineEdit_pump2,self.delayLineEdit_pump2]
+            widgets=[widgets_pump1,widgets_pump2][pump-1]
+        elif mode==1: # multi-step
+            logger.info(f'Sending Multi-Step Variables from GUI to Pump {pump}')
+            self.CONNECTION.changePump(pump)
+            widgets_pump1=[self.multi_unitsCBox_pump1,self.multi_diameterLineEdit_pump1,self.multi_volumeLineEdit_pump1,self.multi_flowRateLineEdit_pump1,self.multi_delayLineEdit_pump1]
+            widgets_pump2=[self.multi_unitsCBox_pump2,self.multi_diameterLineEdit_pump2,self.multi_volumeLineEdit_pump2,self.multi_flowRateLineEdit_pump2,self.multi_delayLineEdit_pump2]
+            widgets=[widgets_pump1,widgets_pump2][pump-1]
+        if mode==2:
+            logger.info('Sending Cycle Mode Variables from GUI')
+            self.CONNECTION.changePump(3)
+            widgets=[self.cycle_unitsCBox,self.cycle_diameterLineEdit,self.cycle_volumeLineEdit,self.cycle_flowRateLineEdit,self.cycle_delayLineEdit]
+
+        # references for designated pump
         names=['Units','Syringe Diameter', 'Volume', 'Flow Rate', 'Delay']
-        # setup widget references
-        widgets_pump1=[self.unitsCBox_pump1,self.diameterLineEdit_pump1,self.volumeLineEdit_pump1,self.flowRateLineEdit_pump1,self.delayLineEdit_pump1]
-        widgets_pump2=[self.unitsCBox_pump2,self.diameterLineEdit_pump2,self.volumeLineEdit_pump2,self.flowRateLineEdit_pump2,self.delayLineEdit_pump2]
-        # reference widgets for designated pump
-        widgets=[widgets_pump1,widgets_pump2][pump-1]
-        funcref=[self.CONNECTION.setUnits,self.CONNECTION.setDiameter,self.CONNECTION.setVolume,self.CONNECTION.setRate,self.CONNECTION.setDelay]
-        values=[]
-        
-        # loop through each widget and pull values, then send values using specified function
-        for ii in range(len(widgets)):
-            func=funcref[ii]
-            widg=widgets[ii]
-            # different value extraction methods depending on widget
-            if widg.__class__.__name__=='QLineEdit':
-                if widg.text()!='':
-                    value=widg.text()
-                else:
-                    raise Exception('ERROR: Must enter all pump variables before starting run.')
-            elif widg.__class__.__name__=='QComboBox':
-                if widg.currentText()!='':
-                    value=widg.currentText()
-                else:
-                    raise Exception('ERROR: Must enter all pump variables before starting run.')
-            else: 
-                logger.warning('Unrecognized widget class.')
-            # Send to pump
-            func(value)
-            values.append(value)
-        """
-        Validate that value is inside of operational range.
-        Reads parameters from pump and compares to what was sent from GUI.
-        Throws error if mismatch.
-        """
-        # index of relevant variable to readout from pump
-        map_readparam_pump1 = [2,3,6,4,7]
-        map_readparam_pump2 = [9,10,13,11,14]
-        # reference parameters for designated pump
-        map_readparam = [map_readparam_pump1,map_readparam_pump2][pump-1]
-        # get parameters of current pump run
-        readout=self.CONNECTION.getParameters()
-        # map readout to params
-        params=[readout[x].strip(' ').split(' ')[-1] for x in map_readparam]
-        # skip units param, fixed options in GUI are within operational range
-        for ii in range(1,len(values)): 
-            # get parameter value from pump readout
-            paramVal = params[ii]
-            # abs() accounts for negative volume metric (withdraw functionality)
-            if not float(paramVal)==abs(float(values[ii])):
-                raise Exception(f'ERROR: Pump {pump} {names[ii]} value outside of operational range')
-    
-    def sendFromGUI_multi(self,pump):
-        """
-        Send run variable info to pump using information from each of the respective widgets.
-        If any are empty throw an error.
-        For multi-step we skip validation
-        """
-        # specify which pump commands are sent to
-        self.CONNECTION.changePump(pump)
-        # Each of these setup variables need to be changed if order is modified in any way
-        names=['Units','Syringe Diameter', 'Volume', 'Flow Rate', 'Delay']
-        # setup widget references
-        widgets_pump1=[self.multi_unitsCBox_pump1,self.multi_diameterLineEdit_pump1,self.multi_volumeLineEdit_pump1,self.multi_flowRateLineEdit_pump1,self.multi_delayLineEdit_pump1]
-        widgets_pump2=[self.multi_unitsCBox_pump2,self.multi_diameterLineEdit_pump2,self.multi_volumeLineEdit_pump2,self.multi_flowRateLineEdit_pump2,self.multi_delayLineEdit_pump2]
-        # reference widgets for designated pump
-        widgets=[widgets_pump1,widgets_pump2][pump-1]
-        # function references
         funcref=[self.CONNECTION.setUnits,self.CONNECTION.setDiameter,self.CONNECTION.setVolume,self.CONNECTION.setRate,self.CONNECTION.setDelay]
         values=[]
         nsteps=0
@@ -354,9 +321,8 @@ class ChemyxPumpGUI(QDialog):
                     raise Exception('ERROR: Must enter all pump variables before starting run.')
             else: 
                 logger.warning('Unrecognized widget class.')
-            
-            # process entry data into list
-            if ii>1: 
+            # MULTI: process entry data into list
+            if ii>1 and mode==1: 
                 # skip units and diameter, these are immutable between steps
                 value=[v.strip() for v in value.split(',')]
                 # initialize nsteps at first multi-step parameter
@@ -364,44 +330,33 @@ class ChemyxPumpGUI(QDialog):
                 # ensure list length matches number of steps
                 if len(value)!=nsteps:
                     raise Exception('ERROR: Number of steps must match number of input variables. \n Pump {pump} {names[ii]}')
+            
             # Send to pump
             func(value)
             values.append(value)
-        
-    def sendFromGUI_cycle(self):
         """
-        Send run variable info to pump using information from each of the respective widgets.
-        If any are empty throw an error.
+        Validate that value is inside of operational range.
+        Reads parameters from pump and compares to what was sent from GUI.
+        Throws error if mismatch.
+        ONLY works for SINGLE-step run.
         """
-        # specify which pump commands are sent to
-        self.CONNECTION.changePump(3)
-        # Each of these setup variables need to be changed if order is modified in any way
-        names=['Units','Syringe Diameter', 'Volume', 'Flow Rate', 'Delay']
-        # setup widget references
-        widgets=[self.cycle_unitsCBox,self.cycle_diameterLineEdit,self.cycle_volumeLineEdit,self.cycle_flowRateLineEdit,self.cycle_delayLineEdit]
-        # function references
-        funcref=[self.CONNECTION.setUnits,self.CONNECTION.setDiameter,self.CONNECTION.setVolume,self.CONNECTION.setRate,self.CONNECTION.setDelay]
-        values=[]
-        # loop through each widget and pull values, then send values using specified function
-        for ii in range(len(widgets)):
-            func=funcref[ii]
-            widg=widgets[ii]
-            # different value extraction methods depending on widget
-            if widg.__class__.__name__=='QLineEdit':
-                if widg.text()!='':
-                    value=widg.text()
-                else:
-                    raise Exception('ERROR: Must enter all pump variables before starting run.')
-            elif widg.__class__.__name__=='QComboBox':
-                if widg.currentText()!='':
-                    value=widg.currentText()
-                else:
-                    raise Exception('ERROR: Must enter all pump variables before starting run.')
-            else: 
-                logger.warning('Unrecognized widget class.')
-            # Send to pump
-            func(value)
-            values.append(value)
+        if mode == 0:
+            # index of relevant variable to readout from pump
+            map_readparam_pump1 = [2,3,6,4,7]
+            map_readparam_pump2 = [9,10,13,11,14]
+            # reference parameters for designated pump
+            map_readparam = [map_readparam_pump1,map_readparam_pump2][pump-1]
+            # get parameters of current pump run
+            readout=self.CONNECTION.getParameters()
+            # map readout to params
+            params=[readout[x].strip(' ').split(' ')[-1] for x in map_readparam]
+            # skip units param, fixed options in GUI are within operational range
+            for ii in range(1,len(values)): 
+                # get parameter value from pump readout
+                paramVal = params[ii]
+                # abs() accounts for negative volume metric (withdraw functionality)
+                if not float(paramVal)==abs(float(values[ii])):
+                    raise Exception(f'ERROR: Pump {pump} {names[ii]} value outside of operational range')
                 
     def start(self):
         """
@@ -409,18 +364,18 @@ class ChemyxPumpGUI(QDialog):
         """
         if self.connected:
             if self.tabs.currentIndex()==0: # single-step
-                logger.info('Sending Single-Step Variables from GUI')
-                self.sendFromGUI(pump=1)
-                self.sendFromGUI(pump=2)
+                #logger.info('Sending Single-Step Variables from GUI')
+                #self.sendFromGUI(pump=1)
+                #self.sendFromGUI(pump=2)
                 self.CONNECTION.startPump()
             elif self.tabs.currentIndex()==1: # multi-step
-                logger.info('Sending Multi-Step Variables from GUI')
-                self.sendFromGUI_multi(pump=1)
-                self.sendFromGUI_multi(pump=2)
+                #logger.info('Sending Multi-Step Variables from GUI')
+                #self.sendFromGUI_multi(pump=1)
+                #self.sendFromGUI_multi(pump=2)
                 self.CONNECTION.startPump(multistep=True)
             else: # cycle mode
-                logger.info('Sending Cycle Mode Variables from GUI')
-                self.sendFromGUI_cycle()
+                #logger.info('Sending Cycle Mode Variables from GUI')
+                #self.sendFromGUI_cycle()
                 self.CONNECTION.startPump(mode=3)
             self.isRunning=True
             self.setPauseBtn(True)
@@ -436,17 +391,17 @@ class ChemyxPumpGUI(QDialog):
         """
         if self.connected:
             if self.tabs.currentIndex()==0: # single-step
-                logger.info(f'Sending Single-Step Variables from GUI to Pump {pump}')
-                self.sendFromGUI(pump=pump)
+                #logger.info(f'Sending Single-Step Variables from GUI to Pump {pump}')
+                #self.sendFromGUI(pump=pump)
                 self.CONNECTION.startPump(mode=pump)
             elif self.tabs.currentIndex()==1: # multi-step
-                logger.info(f'Sending Multi-Step Variables from GUI to Pump {pump}')
-                self.sendFromGUI_multi(pump=pump)
+                #logger.info(f'Sending Multi-Step Variables from GUI to Pump {pump}')
+                #self.sendFromGUI_multi(pump=pump)
                 self.CONNECTION.startPump(mode=pump,multistep=True) # will this work?
             else: # cycle mode
                 logger.warning('Cycle mode starts both pumps.')
-                logger.info('Sending Cycle Mode Variables from GUI')
-                self.sendFromGUI_cycle()
+                #logger.info('Sending Cycle Mode Variables from GUI')
+                #self.sendFromGUI_cycle()
                 self.CONNECTION.startPump(mode=3)
             self.isRunning=True
             self.setPauseBtn(True)
