@@ -60,6 +60,10 @@ classdef connection < handle
             %}
             command='start pump';
             % if optional parameters entered
+            
+            % setup input parser
+            p=inputParser;
+            
             if length(varargin)>0
                 mode=int2str(cell2mat(varargin(1)));
                 if obj.multipump&&mode>0
@@ -130,13 +134,63 @@ classdef connection < handle
             obj.sendCommand(sprintf('set diameter %f', diameter));
         end
         function response = setRate(obj,rate)
-            obj.sendCommand(sprintf('set rate %f', rate));
+            %{
+            Set rate of run. If rate is a list, apply multi-step setting.
+            
+            Parameters
+            ----------
+            rate : float, list of floats, string array,
+                Rate that pump will output fluid from syringe. List input
+                results in multi-step command where each entry is an
+                individual step. 
+                For multi-step variable rate, enter slashes between
+                Rate1 and Rate2 of each step. EX: setRate(["5/10", "15/20"])
+            %}
+            if length(rate)>1
+                % set using multi-step command
+                rate=join(string(rate),',');
+            else
+                rate=string(rate);
+            end
+            obj.sendCommand(sprintf('set rate %s', rate));
         end
         function response = setVolume(obj,volume)
-            obj.sendCommand(sprintf('set volume %f', volume));
+            %{
+            Set volume of run. If rate is a list, apply multi-step setting.
+            
+            Parameters
+            ----------
+            volume : float, list of floats, string array,
+                Volume of fluid that pump will output from syringe. List input
+                results in multi-step command where each entry is an
+                individual step. 
+            %}
+            if length(volume)>1
+                % set using multi-step command
+                volume=join(string(volume),',');
+            else
+                volume=string(volume);
+            end
+            obj.sendCommand(sprintf('set volume %s', volume));
         end
         function response = setDelay(obj,delay)
-            obj.sendCommand(sprintf('set delay %f', delay));
+            %{
+            Set delay of run. If rate is a list, apply multi-step setting.
+            
+            Parameters
+            ----------
+            delay : float, list of floats, string array,
+                Delay before starting each step of the run. List input
+                results in multi-step command where each entry is an
+                individual step. 
+            %}
+            if length(delay)>1
+                % set using multi-step command
+                delay=join(string(delay),',');
+            else
+                delay=string(delay);
+            end
+            obj.sendCommand(sprintf('set delay %s', delay));
         end
         function response = closeConnection(obj)
             obj.ser=[];
@@ -147,7 +201,7 @@ classdef connection < handle
   
             Parameters
             ----------
-            mode : int
+            pump : int
                 Pump that will have its settings modified in subsequent commands.
             %}
             if obj.multipump

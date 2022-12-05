@@ -284,19 +284,19 @@ class ChemyxPumpGUI(QDialog):
         # setup widget references based on which mode
         if mode==0: # single-step
             logger.info(f'Sending Single-Step Variables from GUI to Pump {pump}')
-            self.CONNECTION.changePump(pump)
+            self.CONNECTION.setPump(pump)
             widgets_pump1=[self.unitsCBox_pump1,self.diameterLineEdit_pump1,self.volumeLineEdit_pump1,self.flowRateLineEdit_pump1,self.delayLineEdit_pump1]
             widgets_pump2=[self.unitsCBox_pump2,self.diameterLineEdit_pump2,self.volumeLineEdit_pump2,self.flowRateLineEdit_pump2,self.delayLineEdit_pump2]
             widgets=[widgets_pump1,widgets_pump2][pump-1]
         elif mode==1: # multi-step
             logger.info(f'Sending Multi-Step Variables from GUI to Pump {pump}')
-            self.CONNECTION.changePump(pump)
+            self.CONNECTION.setPump(pump)
             widgets_pump1=[self.multi_unitsCBox_pump1,self.multi_diameterLineEdit_pump1,self.multi_volumeLineEdit_pump1,self.multi_flowRateLineEdit_pump1,self.multi_delayLineEdit_pump1]
             widgets_pump2=[self.multi_unitsCBox_pump2,self.multi_diameterLineEdit_pump2,self.multi_volumeLineEdit_pump2,self.multi_flowRateLineEdit_pump2,self.multi_delayLineEdit_pump2]
             widgets=[widgets_pump1,widgets_pump2][pump-1]
         if mode==2:
             logger.info('Sending Cycle Mode Variables from GUI')
-            self.CONNECTION.changePump(3)
+            self.CONNECTION.setPump(3)
             widgets=[self.cycle_unitsCBox,self.cycle_diameterLineEdit,self.cycle_volumeLineEdit,self.cycle_flowRateLineEdit,self.cycle_delayLineEdit]
 
         # references for designated pump
