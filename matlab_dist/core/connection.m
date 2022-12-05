@@ -48,7 +48,7 @@ classdef connection < handle
 
             Optional Parameters
             ----------
-            mode (vargin 1) : int
+            mode : int
                 Mode that pump should start running.
                 For single-channel pumps this value should not change.
                 Dual-channel pumps have more control over run state.
@@ -57,18 +57,26 @@ classdef connection < handle
                 1: For dual channel pumps, runs just pump 1.
                 2: For dual channel pumps, runs just pump 2.
                 3: Run in cycle mode.
+            multistep : bool
+                Determine if pump should start in multistep mode
             %}
             command='start pump';
             % if optional parameters entered
-            
+            defaultMode=0;
             % setup input parser
             p=inputParser;
-            
-            if length(varargin)>0
-                mode=int2str(cell2mat(varargin(1)));
-                if obj.multipump&&mode>0
-                    command=append(mode,' ',command);
-                end
+            addOptional(p,'mode',defaultMode);
+            addOptional(p,'multistep',false);
+            parse(p,varargin{:});
+            % set from parse
+            mode = p.Results.mode;
+            multistep = p.Results.multistep;
+            % modify command based on parameters
+            if obj.multipump&&mode>0
+                command=append(int2str(mode),' ',command);
+            end
+            if multistep
+                command=append(command,' ',int2str(multistep));
             end
             % send command
             obj.sendCommand(sprintf(command));
