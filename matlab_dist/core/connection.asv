@@ -3,10 +3,10 @@ classdef connection < handle
         ser % serialport object
         waittime = 0.3 % float, delay after sending one command
         multipump % bool, true if pump is multi-channel
-        currentpump % used in multipump setups
+        currentpump % int, used in multipump setups
     end
     methods
-        function obj = openConnection(obj,port,baudrate,multipump)
+        function obj = openConnection(obj,port,baudrate,varargin)
             % Create serialport object
             obj.ser = serialport(port,baudrate);
             % Chemyx RS232 serial port config
@@ -17,7 +17,10 @@ classdef connection < handle
             configureTerminator(obj.ser,'CR/LF');
             set(obj.ser,'Timeout',0.5);
             % multipump setting
-            obj.multipump=multipump;
+            if length(varargin)>2 % if user inputs multipump
+                obj.multipump=varargin(1);
+                obj.currentpump=1;
+            end
         end
         function response = sendCommand(obj, command)
             %{
@@ -39,6 +42,23 @@ classdef connection < handle
             pause(obj.waittime)
         end
         function response = startPump(obj)
+            %{
+            Start run of pump. 
+
+            Parameters
+            ----------
+            mode : int
+                Mode that pump should start running.
+                For single-channel pumps this value should not change.
+                Dual-channel pumps have more control over run state.
+
+                0: Default, runs all channels available.
+                1: For dual channel pumps, runs just pump 1.
+                2: For dual channel pumps, runs just pump 2.
+                3: Run in cycle mode.
+            multistep : bool
+                Determine if pump should start in multistep mode
+            %}
             obj.sendCommand(sprintf('start pump'));
         end
         function response = stopPump(obj)

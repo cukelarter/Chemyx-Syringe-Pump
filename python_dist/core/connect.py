@@ -102,7 +102,7 @@ class Connection(object):
 
         Parameters
         ----------
-        command : string
+        command : float
             Command to be sent across serial connection.
 
         """
