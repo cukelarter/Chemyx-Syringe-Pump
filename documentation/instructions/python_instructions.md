@@ -23,7 +23,7 @@ To send commands to your CHEMYX syringe pump using Python, follow these steps.
 	1. Call “conn.closeConnection()” to close connection to pump.
 	2. Alternatively, unplugging Syringe Pump from USB port will close the connection.
 
-**Using the Python GUI**
+**Using the Python GUI**  
 GUI can be started by opening relevant CHEMYX_GUI.py file.
 1. **Connect to pump**
 	1. When starting GUI, serial port dropdown will auto-populate with any open serial ports. Press "Scan for Open Ports" to rescan and repopulate dropdown.
