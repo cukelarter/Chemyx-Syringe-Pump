@@ -8,8 +8,25 @@ This GUI is to be used specifically with Dual-Channel implementations.
 Tested on CHEMYX 4000-X.
 """
 
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
+from PyQt5.QtWidgets import (
+    QDialog,
+    QGroupBox,
+    QTabWidget,
+    QWidget,
+    QLabel,
+    QComboBox,
+    QPushButton,
+    QLineEdit,
+    QSpinBox,
+    QVBoxLayout,
+    QFormLayout,
+    QHBoxLayout,
+    QApplication,
+)
+from PyQt5.QtGui import (
+    QPixmap,
+    QDoubleValidator,
+)
 from PyQt5.QtCore import Qt
 
 from core import connect
@@ -68,7 +85,7 @@ class ChemyxPumpGUI(QDialog):
             
     def initUI(self):
         # Logo Graphics
-        logopath='static/logo.png'
+        logopath='gui_static/logo.png'
         self.logo = QPixmap(logopath).scaled(200,100)
         self.logoImage=QLabel()
         self.logoImage.setPixmap(self.logo)
@@ -284,19 +301,19 @@ class ChemyxPumpGUI(QDialog):
         # setup widget references based on which mode
         if mode==0: # single-step
             logger.info(f'Sending Single-Step Variables from GUI to Pump {pump}')
-            self.CONNECTION.changePump(pump)
+            self.CONNECTION.setPump(pump)
             widgets_pump1=[self.unitsCBox_pump1,self.diameterLineEdit_pump1,self.volumeLineEdit_pump1,self.flowRateLineEdit_pump1,self.delayLineEdit_pump1]
             widgets_pump2=[self.unitsCBox_pump2,self.diameterLineEdit_pump2,self.volumeLineEdit_pump2,self.flowRateLineEdit_pump2,self.delayLineEdit_pump2]
             widgets=[widgets_pump1,widgets_pump2][pump-1]
         elif mode==1: # multi-step
             logger.info(f'Sending Multi-Step Variables from GUI to Pump {pump}')
-            self.CONNECTION.changePump(pump)
+            self.CONNECTION.setPump(pump)
             widgets_pump1=[self.multi_unitsCBox_pump1,self.multi_diameterLineEdit_pump1,self.multi_volumeLineEdit_pump1,self.multi_flowRateLineEdit_pump1,self.multi_delayLineEdit_pump1]
             widgets_pump2=[self.multi_unitsCBox_pump2,self.multi_diameterLineEdit_pump2,self.multi_volumeLineEdit_pump2,self.multi_flowRateLineEdit_pump2,self.multi_delayLineEdit_pump2]
             widgets=[widgets_pump1,widgets_pump2][pump-1]
         if mode==2:
             logger.info('Sending Cycle Mode Variables from GUI')
-            self.CONNECTION.changePump(3)
+            self.CONNECTION.setPump(3)
             widgets=[self.cycle_unitsCBox,self.cycle_diameterLineEdit,self.cycle_volumeLineEdit,self.cycle_flowRateLineEdit,self.cycle_delayLineEdit]
 
         # references for designated pump
@@ -306,6 +323,7 @@ class ChemyxPumpGUI(QDialog):
         nsteps=0
         # loop through each widget and pull values, then send values using specified function
         for ii in range(len(widgets)):
+            value=0
             func=funcref[ii]
             widg=widgets[ii]
             # different value extraction methods depending on widget
@@ -313,12 +331,12 @@ class ChemyxPumpGUI(QDialog):
                 if widg.text()!='':
                     value=widg.text()
                 else:
-                    raise Exception('ERROR: Must enter all pump variables before starting run.')
+                    logger.warning(f'No value entered for Pump {pump} {names[ii]}.')
             elif widg.__class__.__name__=='QComboBox':
                 if widg.currentText()!='':
                     value=widg.currentText()
                 else:
-                    raise Exception('ERROR: Must enter all pump variables before starting run.')
+                    logger.warning(f'No value entered for Pump {pump} {names[ii]}.')
             else: 
                 logger.warning('Unrecognized widget class.')
             # MULTI: process entry data into list
@@ -329,10 +347,11 @@ class ChemyxPumpGUI(QDialog):
                 nsteps=len(value) if nsteps==0 else nsteps
                 # ensure list length matches number of steps
                 if len(value)!=nsteps:
-                    raise Exception('ERROR: Number of steps must match number of input variables. \n Pump {pump} {names[ii]}')
+                    logger.warning(f'Mismatched number of steps. \n Pump {pump} {names[ii]} : {len(value)} steps \n nsteps : {nsteps}')
             
             # Send to pump
-            func(value)
+            if value!=0:
+                func(value)
             values.append(value)
         """
         Validate that value is inside of operational range.
@@ -354,10 +373,10 @@ class ChemyxPumpGUI(QDialog):
             for ii in range(1,len(values)): 
                 # get parameter value from pump readout
                 paramVal = params[ii]
+                # check if value provided is outside operational range
                 # abs() accounts for negative volume metric (withdraw functionality)
-                if not float(paramVal)==abs(float(values[ii])):
-                    raise Exception(f'ERROR: Pump {pump} {names[ii]} value outside of operational range')
-                
+                if (not float(paramVal) == abs(float(values[ii]))) and values[ii]!=0:
+                    logger.warning(f'Pump {pump} {names[ii]} value outside of operational range')
     def start(self):
         """
         Start the current run. Sends updated pump variables before starting run. 
