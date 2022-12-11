@@ -1,7 +1,12 @@
 classdef connection < handle
+    %{
+    Connection class for interacting with Chemyx Syringe Pumps using
+    MATLAB. Connection file can be stored at same level of run script in
+    order to be accessed by other scripts.
+    %}
     properties
         ser % serialport object
-        waittime = 0.3 % float, delay after sending one command
+        waittime = 0.4 % float, delay after sending one command
         multipump = false % bool, true if pump is multi-channel
         currentpump % int, used in multipump setups
     end
@@ -17,8 +22,13 @@ classdef connection < handle
             configureTerminator(obj.ser,'CR/LF');
             set(obj.ser,'Timeout',0.5);
             % multipump setting
-            if length(varargin)>0 % if user inputs multipump
-                obj.multipump=cell2mat(varargin(1));
+            % setup input parser
+            p=inputParser;
+            addOptional(p,'multipump',false);
+            parse(p,varargin{:});
+            % set from parse
+            obj.multipump = p.Results.multipump;
+            if obj.multipump % if user inputs multipump
                 obj.currentpump=1;
             end
         end
@@ -60,12 +70,10 @@ classdef connection < handle
             multistep : bool
                 Determine if pump should start in multistep mode
             %}
-            command='start pump';
-            % if optional parameters entered
-            defaultMode=0;
+            command='start ';
             % setup input parser
             p=inputParser;
-            addOptional(p,'mode',defaultMode);
+            addOptional(p,'mode',0);
             addOptional(p,'multistep',false);
             parse(p,varargin{:});
             % set from parse
@@ -97,7 +105,7 @@ classdef connection < handle
                 2: For dual channel pumps, stops just pump 2.
                 3: Stop cycle mode.
             %}
-            command='stop pump';
+            command='stop ';
             % if optional parameters entered
             if length(varargin)>0
                 mode=int2str(cell2mat(varargin(1)));
@@ -124,7 +132,7 @@ classdef connection < handle
                 2: For dual channel pumps, pauses just pump 2.
                 3: Pause cycle mode.
             %}
-            command='pause pump';
+            command='pause ';
             if length(varargin)>0
                 mode=int2str(cell2mat(varargin(1)));
                 if obj.multipump&&mode>0
