@@ -4,7 +4,7 @@ To send commands to your CHEMYX syringe pump using MATLAB, follow these steps.
 
 **Installation and Setup**  
 	1. **Basic Installation**  
-		1. License and download latest MATLAB version from https://www.mathworks.com/products/matlab.html.  
+		&emsp 1. License and download latest MATLAB version from https://www.mathworks.com/products/matlab.html.  
 		2. Software was tested on MATLAB R2020a.  
 
 **Create Run using Matlab Script**  
