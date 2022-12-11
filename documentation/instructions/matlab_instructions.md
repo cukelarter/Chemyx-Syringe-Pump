@@ -2,22 +2,22 @@
 
 To send commands to your CHEMYX syringe pump using MATLAB, follow these steps.
 
-**Installation and Setup**
-	1. **Basic Installation**
-		1. License and download latest MATLAB version from https://www.mathworks.com/products/matlab.html.
-		2. Software was tested on MATLAB R2020a.
+**Installation and Setup**  
+	1. **Basic Installation**  
+		1. License and download latest MATLAB version from https://www.mathworks.com/products/matlab.html.  
+		2. Software was tested on MATLAB R2020a.  
 
-**Create Run using Matlab Script**
-	1. Template scripts are provided and can be modified to match study design parameters. Script must be located in same working directory as "connection.m" file.
-		+ singlestep.m					Single step run on single-channel pumps
-		+ multistep.m	 				Multi step run on single-channel pumps
-		+ dualchannel_singlestep.m		Single step run on dual-channel pumps
-		+ dualchannel_multistep.m		Multi step run on dual-channel pumps
-		+ dualchannel_cycle.m			Cycle mode run on dual-channel pumps
-	2. Baud rate in script **MUST** match value of the syringe pump, which can be found and changed in “System Settings”
-	3. After running the script, serial connection will remain open until disconnected.
-		1. Clearing connection variable from workspace will reset the connection.
-		2. Alternatively, unplugging Syringe Pump from USB port will close the connection.
+**Create Run using Matlab Script**  
+	1. Template scripts are provided and can be modified to match study design parameters. Script must be located in same working directory as "connection.m" file.  
+		+ singlestep.m				Single step run on single-channel pumps  
+		+ multistep.m	 			Multi step run on single-channel pumps  
+		+ dualchannel_singlestep.m		Single step run on dual-channel pumps  
+		+ dualchannel_multistep.m		Multi step run on dual-channel pumps  
+		+ dualchannel_cycle.m			Cycle mode run on dual-channel pumps  
+	2. Baud rate in script **MUST** match value of the syringe pump, which can be found and changed in “System Settings”  
+	3. After running the script, serial connection will remain open until disconnected.  
+		1. Clearing connection variable from workspace will reset the connection.  
+		2. Alternatively, unplugging Syringe Pump from USB port will close the connection.  
 
 **Using the MATLAB GUI**
 	GUI can be started by installing relevant GUI using app installer file. Unpack app by opening any .mlapp file in MATLAB. The installed app can be launched from the "APPS" tab.
