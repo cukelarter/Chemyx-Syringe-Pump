@@ -31,7 +31,7 @@ if __name__=='__main__':
     conn.openConnection()
     
     # Specify that we are modfying cycle mode settings
-    conn.changePump(3)
+    conn.setPump(3)
     
     # Setup parameters for pump
     units='mL/min'		 	# OPTIONS: 'mL/min','mL/hr','μL/min','μL/hr'

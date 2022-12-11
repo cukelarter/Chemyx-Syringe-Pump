@@ -112,7 +112,7 @@ class Connection(object):
         try:
             arg = bytes(str(command), 'utf8') + b'\r'
             self.ser.write(arg)
-            time.sleep(0.5)
+            time.sleep(0.4)
             response = self.getResponse()
             return response
         except TypeError as e:
@@ -285,7 +285,7 @@ class Connection(object):
         response = self.sendCommand(command)
         return response
     
-    def changePump(self,pump):
+    def setPump(self,pump):
         """
         Change which pump's settings are being modified in multi-pump setup
         

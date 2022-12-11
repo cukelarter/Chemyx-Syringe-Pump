@@ -12,7 +12,7 @@ To send commands to your CHEMYX syringe pump using a python-integrated GUI, foll
 		2. PyQT5 - "python -m pip install PyQT5" (required for GUI interfacing)
 
 **Create Run using Python Script**
-	1. Example scripts are provided and can be modified to match study design parameters.
+	1. Template scripts are provided and can be modified to match study design parameters. Script must be located in same working directory as "core" directory.
 		+ singlestep.py				Single step run on single-channel pumps
 		+ multistep.py	 			Multi step run on single-channel pumps
 		+ 2channel_singlestep.py	Single step run on dual-channel pumps

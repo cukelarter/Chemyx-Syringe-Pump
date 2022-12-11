@@ -31,7 +31,7 @@ if __name__=='__main__':
     conn.openConnection()
     
     # Specify which pump is having its parameters modified
-    conn.changePump(1)
+    conn.setPump(1)
     
     # Setup parameters for pump 1
     units='mL/min'		 	# OPTIONS: 'mL/min','mL/hr','μL/min','μL/hr'
@@ -46,7 +46,7 @@ if __name__=='__main__':
     conn.setRate(rate)        
     
     # Specify which pump is having its parameters modified
-    conn.changePump(2)
+    conn.setPump(2)
     
     # Setup parameters for pump 2
     units='mL/min'		 	# OPTIONS: 'mL/min','mL/hr','μL/min','μL/hr'
