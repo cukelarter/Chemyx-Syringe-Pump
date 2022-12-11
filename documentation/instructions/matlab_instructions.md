@@ -2,10 +2,10 @@
 
 To send commands to your CHEMYX syringe pump using MATLAB, follow these steps.
 
-**Installation and Setup**  
-	1. **Basic Installation**  
-		> 1. License and download latest MATLAB version from https://www.mathworks.com/products/matlab.html.  
-		> 2. Software was tested on MATLAB R2020a.  
+**Installation and Setup** 
+	1. **Basic Installation** 
+		1. License and download latest MATLAB version from https://www.mathworks.com/products/matlab.html. 
+		2. Software was tested on MATLAB R2020a. 
 
 **Create Run using Matlab Script**  
 	1. Template scripts are provided and can be modified to match study design parameters. Script must be located in same working directory as "connection.m" file.  
@@ -19,10 +19,10 @@ To send commands to your CHEMYX syringe pump using MATLAB, follow these steps.
 		1. Clearing connection variable from workspace will reset the connection.  
 		2. Alternatively, unplugging Syringe Pump from USB port will close the connection.  
 
-**Using the MATLAB GUI**
-	GUI can be started by installing relevant GUI using app installer file. Unpack app by opening any .mlapp file in MATLAB. The installed app can be launched from the "APPS" tab.
-	1. **Connect to pump**
-		1. When starting GUI, serial port dropdown will auto-populate with any open serial ports. Press "Scan for Open Ports" to rescan and repopulate dropdown.
+**Using the MATLAB GUI**  
+	GUI can be started by installing relevant GUI using app installer file. Unpack app by opening any .mlapp file in MATLAB. The installed app can be launched from the "APPS" tab.  
+	1. **Connect to pump**  
+		1. When starting GUI, serial port dropdown will auto-populate with any open serial ports. Press "Scan for Open Ports" to rescan and repopulate dropdown.  
 		2. Set the Baud Rate using dropdown. This rate **MUST** match the rate set on the pump (System Settings).
 		3. Press "Connect" to connect to pump using defined settings. If successful, the "DISCONNECTED" text will change to say "CONNECTED" and the connection variables will be locked until disconnected from the pump.
 	2. **Set Run Variables**
