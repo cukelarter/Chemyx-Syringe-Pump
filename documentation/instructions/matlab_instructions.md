@@ -4,12 +4,12 @@ To send commands to your CHEMYX syringe pump using MATLAB, follow these steps.
 
 **Installation and Setup**  
 	1. **Basic Installation**  
-		1. License and download latest MATLAB version from https://www.mathworks.com/products/matlab.html.  
-		2. Software was tested on MATLAB R2020a.  
+	   1. License and download latest MATLAB version from https://www.mathworks.com/products/matlab.html.  
+	   2. Software was tested on MATLAB R2020a.  
 
 **Create Run using Matlab Script**  
 	1. Template scripts are provided and can be modified to match study design parameters. Script must be located in same working directory as "connection.m" file.  
-		+ singlestep.m				Single step run on single-channel pumps  
+	   + singlestep.m				Single step run on single-channel pumps  
 		+ multistep.m	 			Multi step run on single-channel pumps  
 		+ dualchannel_singlestep.m		Single step run on dual-channel pumps  
 		+ dualchannel_multistep.m		Multi step run on dual-channel pumps  
