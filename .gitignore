@@ -1,2 +1,5 @@
 # Ignore pycache folders
 **/__pycache__/
+matlab_dist/gui_build
+*.psd
+*.docx

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Oct 11 16:59:06 2022
+Created on Tue Oct  4 15:41:48 2022
 
 @author: cukelarter
 
-Script for initiating cycle run on multichannel Chemyx Syringe Pump. Tested on Chemyx 4000-X.
+Script for initiating single step run on multichannel Chemyx Syringe Pump. Tested on Chemyx 4000-X.
 
 After importing serial connection driver we connect to the pump. Connection will remain open
 until user calls "conn.closeConnection()". If user does not call this before exiting
@@ -30,24 +30,35 @@ if __name__=='__main__':
     # Open Connection to pump
     conn.openConnection()
     
-    # Specify that we are modfying cycle mode settings
-    conn.changePump(3)
+    # Specify which pump is having its parameters modified
+    conn.setPump(1)
     
-    # Setup parameters for pump
+    # Setup parameters for pump 1
     units='mL/min'		 	# OPTIONS: 'mL/min','mL/hr','μL/min','μL/hr'
     diameter=28.6           # 28.6mm diameter
     volume=1                # 1 mL volume
     rate=1                  # 1 mL/min flow rate
-    delay=1                 # 1 s delay
     
-    # Communicate parameters to pump
+    # Communicate parameters to pump 1
     conn.setUnits(units)
     conn.setDiameter(diameter)  
     conn.setVolume(volume)      
-    conn.setRate(rate) 
-    conn.setDelay(delay)          
+    conn.setRate(rate)        
     
-    # Start pump in cycle mode
-    conn.startPump(mode=3)
-
-
+    # Specify which pump is having its parameters modified
+    conn.setPump(2)
+    
+    # Setup parameters for pump 2
+    units='mL/min'		 	# OPTIONS: 'mL/min','mL/hr','μL/min','μL/hr'
+    diameter=28.6           # 28.6mm diameter
+    volume=1                # 1 mL volume
+    rate=1                  # 1 mL/min flow rate
+    
+    # Communicate parameters to pump 2
+    conn.setUnits(units)
+    conn.setDiameter(diameter)  
+    conn.setVolume(volume)      
+    conn.setRate(rate)          
+    
+    # Start pump
+    conn.startPump()
