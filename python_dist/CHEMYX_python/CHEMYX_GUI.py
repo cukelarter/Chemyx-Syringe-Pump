@@ -6,8 +6,26 @@ Created on Sun Jul  3 16:31:35 2022
 GUI for interaction with Chemyx syringe pumps.
 """
 
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
+from PyQt5.QtWidgets import (
+    QDialog,
+    QGroupBox,
+    QTabWidget,
+    QWidget,
+    QLabel,
+    QComboBox,
+    QPushButton,
+    QLineEdit,
+    QSpinBox,
+    QVBoxLayout,
+    QFormLayout,
+    QHBoxLayout,
+    QApplication,
+)
+from PyQt5.QtGui import (
+    QPixmap,
+    QDoubleValidator,
+)
+
 from PyQt5.QtCore import Qt
 
 from core import connect
@@ -19,7 +37,6 @@ logging.basicConfig()
 logger=logging.getLogger('Log')
 logger.setLevel(logging.INFO)
 
-#%% Testing
 class ChemyxPumpGUI(QDialog):
     """GUI for Chemyx Syringe Pumps
     """
@@ -64,7 +81,7 @@ class ChemyxPumpGUI(QDialog):
             
     def initUI(self):
         # Logo Graphics
-        logopath='static/logo.png'
+        logopath='gui_static/logo.png'
         self.logo = QPixmap(logopath).scaled(200,100)
         self.logoImage=QLabel()
         self.logoImage.setPixmap(self.logo)
@@ -179,7 +196,7 @@ class ChemyxPumpGUI(QDialog):
         Send run variable info to pump using information from each of the respective widgets.
         If any are empty throw an error.
         """
-        # setup static references
+        # setup gui_static references
         names=['Units','Syringe Diameter', 'Volume', 'Flow Rate', 'Delay']
         widgets=[self.unitsCBox,self.diameterLineEdit,self.volumeLineEdit,self.flowRateLineEdit,self.delayLineEdit]
         funcref=[self.CONNECTION.setUnits,self.CONNECTION.setDiameter,self.CONNECTION.setVolume,self.CONNECTION.setRate,self.CONNECTION.setDelay]
@@ -187,6 +204,7 @@ class ChemyxPumpGUI(QDialog):
         
         # loop through each widget and pull values, then send values using specified function
         for ii in range(len(widgets)):
+            value=0
             func=funcref[ii]
             widg=widgets[ii]
             # different value extraction methods depending on widget
@@ -194,16 +212,17 @@ class ChemyxPumpGUI(QDialog):
                 if widg.text()!='':
                     value=widg.text()
                 else:
-                    raise Exception('ERROR: Must enter all pump variables before starting run.')
+                    logger.warning('Must enter all pump variables before starting run.')
             elif widg.__class__.__name__=='QComboBox':
                 if widg.currentText()!='':
                     value=widg.currentText()
                 else:
-                    raise Exception('ERROR: Must enter all pump variables before starting run.')
+                    logger.warning('Must enter all pump variables before starting run.')
             else: 
                 logger.warning('Unrecognized widget class.')
             # Send to pump
-            func(value)
+            if value!=0:
+                func(value)
             values.append(value)
         """
         Validate that value is inside of operational range.
@@ -220,17 +239,18 @@ class ChemyxPumpGUI(QDialog):
         for ii in range(1,len(values)): 
             # get parameter value from pump readout
             paramVal = params[ii]
+            # check if value provided is outside operational range
             # abs() accounts for negative volume metric (withdraw functionality)
-            if not float(paramVal)==abs(float(values[ii])):
-                raise Exception(f'ERROR: Pump {pump} {names[ii]} value outside of operational range')
+            if (not float(paramVal) == abs(float(values[ii]))) and values[ii]!=0:
+                logger.warning(f'Pump {names[ii]} value outside of operational range')
    
     def sendFromGUI_multi(self):
         """
         Send run variable info to pump using information from each of the respective widgets.
         If any are empty throw an error.
-        For multi-step we skip validation
+        For multistep we skip validation
         """
-        # setup static references        
+        # setup gui_static references
         names=['Units','Syringe Diameter', 'Volume', 'Flow Rate','Delay']
         widgets=[self.multi_unitsCBox,self.multi_diameterLineEdit,self.multi_volumeLineEdit,self.multi_flowRateLineEdit,self.multi_delayLineEdit]
         funcref=[self.CONNECTION.setUnits,self.CONNECTION.setDiameter,self.CONNECTION.setVolume,self.CONNECTION.setRate,self.CONNECTION.setDelay]
@@ -238,6 +258,7 @@ class ChemyxPumpGUI(QDialog):
         nsteps=0
         # loop through each widget and pull values, then send values using specified function
         for ii in range(len(widgets)):
+            value=0
             func=funcref[ii]
             widg=widgets[ii]
             # different value extraction methods depending on widget
@@ -245,12 +266,12 @@ class ChemyxPumpGUI(QDialog):
                 if widg.text()!='':
                     value=widg.text()
                 else:
-                    raise Exception('ERROR: Must enter all pump variables before starting run.')
+                    logger.warning('Must enter all pump variables before starting run.')
             elif widg.__class__.__name__=='QComboBox':
                 if widg.currentText()!='':
                     value=widg.currentText()
                 else:
-                    raise Exception('ERROR: Must enter all pump variables before starting run.')
+                    logger.warning('Must enter all pump variables before starting run.')
             else: 
                 logger.warning('Unrecognized widget class.')
             
@@ -262,9 +283,10 @@ class ChemyxPumpGUI(QDialog):
                 nsteps=len(value) if nsteps==0 else nsteps
                 # ensure list length matches number of steps
                 if len(value)!=nsteps:
-                    raise Exception('ERROR: Number of steps must match number of input variables. \n Pump {pump} {names[ii]}')
+                    logger.warning('Number of steps must match number of input variables. \n Pump {pump} {names[ii]}')
             # Send to pump
-            func(value)
+            if value!=0:
+                func(value)
             values.append(value)
         
         
