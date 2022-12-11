@@ -102,7 +102,7 @@ class Connection(object):
 
         Parameters
         ----------
-        command : string
+        command : float
             Command to be sent across serial connection.
 
         """
@@ -144,7 +144,7 @@ class Connection(object):
 
     def startPump(self, mode=0, multistep=False):
         """
-        Start run of pump.
+        Start run of pump. 
 
         Parameters
         ----------
@@ -152,7 +152,7 @@ class Connection(object):
             Mode that pump should start running.
             For single-channel pumps this value should not change.
             Dual-channel pumps have more control over run state.
-
+            
             0: Default, runs all channels available.
             1: For dual channel pumps, runs just pump 1.
             2: For dual channel pumps, runs just pump 2.
@@ -229,18 +229,6 @@ class Connection(object):
         return response
 
     def setRate(self, rate):
-        """
-        Set rate of run. If rate is a list, apply multi-step setting.
-
-        Parameters
-        ----------
-        rate : float, list of floats, string array,
-            Rate that pump will output fluid from syringe. List input
-            results in multi-step command where each entry is an
-            individual step.
-            For multi-step variable rate, enter slashes between
-            Rate1 and Rate2 of each step. EX: setRate(["5/10", "15/20"])
-        """
         if isinstance(rate,list): 
             # if list of volumes entered, use multi-step command
             command = 'set rate '+','.join([str(x) for x in rate]) 
@@ -250,16 +238,6 @@ class Connection(object):
         return response
 
     def setVolume(self, volume):
-        """
-        Set volume of run. If rate is a list, apply multi-step setting.
-
-        Parameters
-        ----------
-        volume : float, list of floats, string array,
-            Volume of fluid that pump will output from syringe. List input
-            results in multi-step command where each entry is an
-            individual step.
-        """
         if isinstance(volume,list): 
             # if list of volumes entered, use multi-step command
             command = 'set volume '+','.join([str(x) for x in volume]) 
@@ -269,16 +247,6 @@ class Connection(object):
         return response
 
     def setDelay(self, delay):
-        """
-        Set delay of run. If rate is a list, apply multi-step setting.
-
-        Parameters
-        ----------
-        delay : float, list of floats, string array,
-            Delay before starting each step of the run. List input
-            results in multi-step command where each entry is an
-            individual step.
-        """
         if isinstance(delay,list): 
             # if list of volumes entered, use multi-step command
             command = 'set delay '+','.join([str(x) for x in delay]) 
@@ -317,7 +285,7 @@ class Connection(object):
         response = self.sendCommand(command)
         return response
     
-    def setPump(self,pump):
+    def changePump(self,pump):
         """
         Change which pump's settings are being modified in multi-pump setup
         
